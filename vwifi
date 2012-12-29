@@ -1,0 +1,86 @@
+#!/bin/bash
+#
+# virtual wifi
+# please add link to binary directory
+# (if you have installed dhcpd, hostapd)
+#
+# cd /usr/bin
+# (sudo) ln -s {target:vwifi file} {linkname:vwifi}
+#
+# origin: by frank<xuzhen165@gmail.com>
+# developer: niasw<sun.niasw@gmail.com>
+
+function usage
+{
+    echo -e "Usage:\n\t(sudo) vwifi\t[-a rtgw] [-n] [-f] [-r] [-h]"
+    echo -e "\t -a\tspecify route gateway"
+    echo -e "\t -n\tturn on  Virtual WiFi"
+    echo -e "\t -f\tturn off Virtual WiFi"
+    echo -e "\t -r\trefresh  Virtual WiFi"
+    echo -e "\t -h\thelp, print this message then exit"
+}
+
+function start
+{
+    local RTGW=$1
+
+  # initial wifi interface
+    ifconfig wlan0 $rtgw netmask $nmsk
+
+  # start dhcpd
+    #killall dhcpd
+    touch /var/run/dhcpd.pid
+    chown dhcpd /var/run/dhcpd.pid
+    dhcpd wlan0
+
+  # enable NAT
+    iptables --flush
+    iptables --table nat --flush
+    iptables --delete-chain
+    iptables --table nat --delete-chain
+    iptables --table nat --append POSTROUTING --out-interface eth0 -j MASQUERADE
+    iptables --append FORWARD --in-interface wlan0 -j ACCEPT
+    sysctl -w net.ipv4.ip_forward=1
+
+  # start hostapd
+    #killall hostapd
+    hostapd /etc/hostapd/hostapd.conf >/dev/null 2>&1& #if you want to ignore output
+    #hostapd /etc/hostapd/hostapd.conf #if you want to see output
+}
+
+function stop
+{
+    killall hostapd dhcpd
+}
+
+rtgw=192.168.32.1
+nmsk=255.255.255.0
+op=
+
+while getopts "a:nfrh" option
+do
+    case $option in
+        a   )   rtgw=$OPTARG;;
+        n   )   op="on";;
+        f   )   op="off";;
+        r   )   op="refresh";;
+        *   )   usage
+                exit 1;;
+    esac
+done
+
+if [[ -n $op && -n $rtgw ]]; then
+    if [[ $op == on ]]; then
+        start;
+    elif [[ $op == off ]]; then
+        stop;
+    elif [[ $op == refresh ]]; then
+        stop;start;
+    else
+        echo "Sorry, invalid option."
+        usage;
+    fi
+else
+    echo "Sorry, I didn't get enough information."
+    usage
+fi
