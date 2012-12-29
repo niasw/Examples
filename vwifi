@@ -3,6 +3,7 @@
 # virtual wifi
 # please add link to binary directory
 # (if you have installed dhcpd, hostapd)
+# (don't forget to configure /etc/hostapd/hostapd.conf if newly installed)
 #
 # cd /usr/bin
 # (sudo) ln -s {target:vwifi file} {linkname:vwifi}
