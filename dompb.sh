@@ -122,7 +122,6 @@ if [[ -n $ifile && -n $ofile ]]; then
         mpb "$ifile" > "$tempf.log";
         if [[ -n $parit ]]; then
             cat "$tempf.log" | sed -n '/freqs/p' | sed -n "/$parit/p" | sed "s/^.*freqs:,\ //g;s/\/2pi/_bar/g;s/,\ /\t/g;s/\ /_/g" > "$ofile.$parit.txt";
-echo aaa;
         else
             cat "$tempf.log" | sed -n '/freqs/p' | sed 's/freqs:,\ //g;s/\/2pi/_bar/g;s/,\ /\t/g;s/\ /_/g' > "$ofile.txt";
         fi
