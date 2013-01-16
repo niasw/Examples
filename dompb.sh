@@ -87,10 +87,10 @@ if [[ -n $ifile && -n $ofile ]]; then
         ofile=`echo $ofile|sed 's/\.t[em]\.txt$\|\.txt$//g'`;
         mpb "$ifile" > "$tempf.log";
         if [[ -n $tewav ]]; then
-            cat "$tempf.log" | sed -n '/tefreqs/p' | sed 's/tefreqs:,\ //g' | sed 's/\/2pi/_bar/g' | sed 's/,\ /\t/g' | sed 's/\ /_/g' > "$ofile.te.txt";
+            cat "$tempf.log" | sed -n '/tefreqs/p' | sed 's/tefreqs:,\ //g;s/\/2pi/_bar/g;s/,\ /\t/g;s/\ /_/g' > "$ofile.te.txt";
         fi
         if [[ -n $tmwav ]]; then
-            cat "$tempf.log" | sed -n '/tmfreqs/p' | sed 's/tmfreqs:,\ //g' | sed 's/\/2pi/_bar/g' | sed 's/,\ /\t/g' | sed 's/\ /_/g' > "$ofile.tm.txt";
+            cat "$tempf.log" | sed -n '/tmfreqs/p' | sed 's/tmfreqs:,\ //g;s/\/2pi/_bar/g;s/,\ /\t/g;s/\ /_/g' > "$ofile.tm.txt";
         fi
         rm "$tempf.log";
     else
