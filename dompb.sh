@@ -2,14 +2,30 @@
 #
 #  description: a script to run mpb calculation
 #  Usage:
-#    dompb	[-{d|e|m|l|c}] -i INPUT [-o OUTPUT]
+#      dompb	-i INPUT [-o OUTPUT] [-{d|l|c}] [-p PARITY]
 #  Options:
-#  	-d	output data only (default) 	INPUT:ctl 	OUTPUT:te.txt,tm.txt
-#  	-e	output TE data only 		INPUT:ctl 	OUTPUT:te.txt
-#  	-m	output TM data only 		INPUT:ctl 	OUTPUT:tm.txt
-#  	-l	output the origin log file 	INPUT:ctl 	OUTPUT:log
-#  	-c	convert the mpb log file 	INPUT:log 	OUTPUT:te.txt,tm.txt
-#  	-h	help, print this message then exit
+#	-i INPUT	specify INPUT  file
+#	-o OUTPUT	specify OUTPUT file
+#  	-d		output data (default) 	INPUT:ctl 	OUTPUT:txt
+#  	-l		log the mpb output	INPUT:ctl 	OUTPUT:log
+#  	-c		convert mpb output	INPUT:log 	OUTPUT:txt
+#  	-p PARITY	specified PARITY	  OUTPUT:txt->PARITY.txt
+#	   (only output modes with this specified PARITY.
+#	   (eg. PARITY=""
+#	   (	  then output all modes
+#	   (	PARITY="te"
+#	   (	  then output all TE modes
+#	   (	  (i.e. "zeven" in xy-2D system)
+#	   (	PARITY="tm"
+#	   (	  then output all TM modes;
+#	   (	  (i.e. "zodd"  in xy-2D system)
+#	   (	PARITY="zeven"
+#	   (	  then output all modes in even parity of z-axis
+#	   (	PARITY="yeven"
+#	   (	  then output all modes in even parity of y-axis
+#	   (	PARITY="te-yeven"
+#	   (	  then output TE modes
+#	   (	  in even parity of y-axis (xy-2D sys)
 #  Copyright (C) 2013 niasw (Sun Sibai) <niasw@pku.edu.cn>
 #
 #  dependency:  mpb program from MIT <http://ab-initio.mit.edu/wiki/index.php/MIT_Photonic_Bands>
@@ -30,33 +46,49 @@
 
 function usage
 {
-    echo -e "Usage:\n\tdompb\t[-{d|e|m|l|c}] -i INPUT [-o OUTPUT]";
-    echo -e "Options:";
-    echo -e "\t -d\toutput data only (default) \tINPUT:ctl \tOUTPUT:te.txt,tm.txt";
-    echo -e "\t -e\toutput TE data only \t\tINPUT:ctl \tOUTPUT:te.txt";
-    echo -e "\t -m\toutput TM data only \t\tINPUT:ctl \tOUTPUT:tm.txt";
-    echo -e "\t -l\toutput the origin log file \tINPUT:ctl \tOUTPUT:log";
-    echo -e "\t -c\tconvert the mpb log file \tINPUT:log \tOUTPUT:te.txt,tm.txt";
-    echo -e "\t -h\thelp, print this message then exit";
+    echo "  description: a script to run mpb calculation";
+    echo "  Usage:";
+    echo "  \tdompb\t-i INPUT [-o OUTPUT] [-{d|l|c}] [-p PARITY]";
+    echo "  Options:";
+    echo "\t-i INPUT\tspecify INPUT  file";
+    echo "\t-o OUTPUT\tspecify OUTPUT file";
+    echo "  \t-d\t\toutput data (default) \tINPUT:ctl \tOUTPUT:txt";
+    echo "  \t-l\t\tlog the mpb output\tINPUT:ctl \tOUTPUT:log";
+    echo "  \t-c\t\tconvert mpb output\tINPUT:log \tOUTPUT:txt";
+    echo "  \t-p PARITY\tspecified PARITY\t  OUTPUT:txt->PARITY.txt";
+    echo "\t   (only output modes with this specified PARITY.";
+    echo "\t   (eg. PARITY=""";
+    echo "\t   (\t  then output all modes";
+    echo "\t   (\tPARITY="te"";
+    echo "\t   (\t  then output all TE modes";
+    echo "\t   (\t  (i.e. "zeven" in xy-2D system)";
+    echo "\t   (\tPARITY="tm"";
+    echo "\t   (\t  then output all TM modes;";
+    echo "\t   (\t  (i.e. "zodd"  in xy-2D system)";
+    echo "\t   (\tPARITY="zeven"";
+    echo "\t   (\t  then output all modes in even parity of z-axis";
+    echo "\t   (\tPARITY="yeven"";
+    echo "\t   (\t  then output all modes in even parity of y-axis";
+    echo "\t   (\tPARITY="teyeven"";
+    echo "\t   (\t  then output TE modes";
+    echo "\t   (\t  in even parity of y-axis (xy-2D sys)";
 }
 
 ifile='';
 ofile='';
 modes='d';
-tewav='e';
-tmwav='m';
+parit='';
 tempf='';
 
-while getopts "i:o:demlc" option
+while getopts "i:o:dlcp:" option
 do
     case $option in
         i   )   ifile=$OPTARG;;
         o   )   ofile=$OPTARG;;
         d   )   ;;
-        e   )   tmwav='';;
-        m   )   tewav='';;
         l   )   modes='l';;
         c   )   modes='c';;
+        p   )   parit=$OPTARG;;
         *   )   usage
                 exit 1;;
     esac
@@ -77,20 +109,22 @@ fi
 
 if [[ -n $ifile && -n $ofile ]]; then
     if [[ $modes == 'c' ]]; then
-        ofile=`echo $ofile|sed 's/\.t[em]\.txt$\|\.txt$//g'`;
-        cat "$ifile" | sed -n '/tefreqs/p' | sed 's/tefreqs:,\ //g' > "$ofile.te.txt";
-        cat "$ifile" | sed -n '/tmfreqs/p' | sed 's/tmfreqs:,\ //g' > "$ofile.tm.txt";
+        if [[ -n $parit ]]; then
+            cat "$ifile" | sed -n '/freqs/p' | sed -n "/$parit/p" | sed "s/^.*freqs:,\ //g;s/\/2pi/_bar/g;s/,\ /\t/g;s/\ /_/g" > "$ofile.$parit.txt";
+        else
+            cat "$ifile" | sed -n '/freqs/p' | sed 's/freqs:,\ //g;s/\/2pi/_bar/g;s/,\ /\t/g;s/\ /_/g' > "$ofile.txt";
+        fi
     elif [[ $modes == 'l' ]]; then
         ofile=`echo $ofile|sed 's/\.log$//g'`;
         mpb "$ifile" > "$ofile.log";
     elif [[ $modes == 'd' ]]; then
         ofile=`echo $ofile|sed 's/\.t[em]\.txt$\|\.txt$//g'`;
         mpb "$ifile" > "$tempf.log";
-        if [[ -n $tewav ]]; then
-            cat "$tempf.log" | sed -n '/tefreqs/p' | sed 's/tefreqs:,\ //g;s/\/2pi/_bar/g;s/,\ /\t/g;s/\ /_/g' > "$ofile.te.txt";
-        fi
-        if [[ -n $tmwav ]]; then
-            cat "$tempf.log" | sed -n '/tmfreqs/p' | sed 's/tmfreqs:,\ //g;s/\/2pi/_bar/g;s/,\ /\t/g;s/\ /_/g' > "$ofile.tm.txt";
+        if [[ -n $parit ]]; then
+            cat "$tempf.log" | sed -n '/freqs/p' | sed -n "/$parit/p" | sed "s/^.*freqs:,\ //g;s/\/2pi/_bar/g;s/,\ /\t/g;s/\ /_/g" > "$ofile.$parit.txt";
+echo aaa;
+        else
+            cat "$tempf.log" | sed -n '/freqs/p' | sed 's/freqs:,\ //g;s/\/2pi/_bar/g;s/,\ /\t/g;s/\ /_/g' > "$ofile.txt";
         fi
         rm "$tempf.log";
     else
