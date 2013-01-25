@@ -46,32 +46,32 @@
 
 function usage
 {
-    echo "  description: a script to run mpb calculation";
-    echo "  Usage:";
-    echo "  \tdompb\t-i INPUT [-o OUTPUT] [-{d|l|c}] [-p PARITY]";
-    echo "  Options:";
-    echo "\t-i INPUT\tspecify INPUT  file";
-    echo "\t-o OUTPUT\tspecify OUTPUT file";
-    echo "  \t-d\t\toutput data (default) \tINPUT:ctl \tOUTPUT:txt";
-    echo "  \t-l\t\tlog the mpb output\tINPUT:ctl \tOUTPUT:log";
-    echo "  \t-c\t\tconvert mpb output\tINPUT:log \tOUTPUT:txt";
-    echo "  \t-p PARITY\tspecified PARITY\t  OUTPUT:txt->PARITY.txt";
-    echo "\t   (only output modes with this specified PARITY.";
-    echo "\t   (eg. PARITY=""";
-    echo "\t   (\t  then output all modes";
-    echo "\t   (\tPARITY="te"";
-    echo "\t   (\t  then output all TE modes";
-    echo "\t   (\t  (i.e. "zeven" in xy-2D system)";
-    echo "\t   (\tPARITY="tm"";
-    echo "\t   (\t  then output all TM modes;";
-    echo "\t   (\t  (i.e. "zodd"  in xy-2D system)";
-    echo "\t   (\tPARITY="zeven"";
-    echo "\t   (\t  then output all modes in even parity of z-axis";
-    echo "\t   (\tPARITY="yeven"";
-    echo "\t   (\t  then output all modes in even parity of y-axis";
-    echo "\t   (\tPARITY="teyeven"";
-    echo "\t   (\t  then output TE modes";
-    echo "\t   (\t  in even parity of y-axis (xy-2D sys)";
+    echo -e "  description: a script to run mpb calculation";
+    echo -e "  Usage:";
+    echo -e "  \tdompb\t-i INPUT [-o OUTPUT] [-{d|l|c}] [-p PARITY]";
+    echo -e "  Options:";
+    echo -e "\t-i INPUT\tspecify INPUT  file";
+    echo -e "\t-o OUTPUT\tspecify OUTPUT file";
+    echo -e "  \t-d\t\toutput data (default) \tINPUT:ctl \tOUTPUT:txt";
+    echo -e "  \t-l\t\tlog the mpb output\tINPUT:ctl \tOUTPUT:log";
+    echo -e "  \t-c\t\tconvert mpb output\tINPUT:log \tOUTPUT:txt";
+    echo -e "  \t-p PARITY\tspecified PARITY\t  OUTPUT:txt->PARITY.txt";
+    echo -e "\t   (only output modes with this specified PARITY.";
+    echo -e "\t   (eg. PARITY=""";
+    echo -e "\t   (\t  then output all modes";
+    echo -e "\t   (\tPARITY="te"";
+    echo -e "\t   (\t  then output all TE modes";
+    echo -e "\t   (\t  (i.e. "zeven" in xy-2D system)";
+    echo -e "\t   (\tPARITY="tm"";
+    echo -e "\t   (\t  then output all TM modes;";
+    echo -e "\t   (\t  (i.e. "zodd"  in xy-2D system)";
+    echo -e "\t   (\tPARITY="zeven"";
+    echo -e "\t   (\t  then output all modes in even parity of z-axis";
+    echo -e "\t   (\tPARITY="yeven"";
+    echo -e "\t   (\t  then output all modes in even parity of y-axis";
+    echo -e "\t   (\tPARITY="teyeven"";
+    echo -e "\t   (\t  then output TE modes";
+    echo -e "\t   (\t  in even parity of y-axis (xy-2D sys)";
 }
 
 ifile='';
