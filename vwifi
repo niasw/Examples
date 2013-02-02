@@ -13,7 +13,7 @@
 
 function usage
 {
-    echo -e "Usage:\n\t(sudo) vwifi\t[-a rtgw] [-n] [-f] [-r] [-h]"
+    echo -e "Usage:\n\t(sudo) $0\t[-a rtgw] [-n] [-f] [-r] [-h]"
     echo -e "\t -a\tspecify route gateway"
     echo -e "\t -n\tturn on  Virtual WiFi"
     echo -e "\t -f\tturn off Virtual WiFi"
