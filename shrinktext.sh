@@ -25,7 +25,7 @@
 
 function usage
 {
-    echo -e "Usage:\n\tshrinktext -i INPUT [-o OUTPUT]";
+    echo -e "Usage:\n\t$0 -i INPUT [-o OUTPUT]";
     echo -e "Options:";
     echo -e "\t -i\tset INPUT filename";
     echo -e "\t -o\tset OUTPUT filename, if empty then output to stdout";
