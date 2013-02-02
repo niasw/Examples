@@ -48,7 +48,7 @@ function usage
 {
     echo -e "  description: a script to run mpb calculation";
     echo -e "  Usage:";
-    echo -e "  \tdompb\t-i INPUT [-o OUTPUT] [-{d|l|c}] [-p PARITY]";
+    echo -e "  \t$0\t-i INPUT [-o OUTPUT] [-{d|l|c}] [-p PARITY]";
     echo -e "  Options:";
     echo -e "\t-i INPUT\tspecify INPUT  file";
     echo -e "\t-o OUTPUT\tspecify OUTPUT file";
