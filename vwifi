@@ -1,15 +1,18 @@
 #!/bin/bash
+# origin: by frank<xuzhen165@gmail.com>
+# developer: niasw<sun.niasw@gmail.com>
 #
 # virtual wifi
 # please add link to binary directory
-# (if you have installed dhcpd, hostapd)
-# (don't forget to configure /etc/hostapd/hostapd.conf if newly installed)
+# (if you have installed dhcpd[dhcp3-server], hostapd)
+# (please configure /etc/dhcp/dhcpd.conf [for Ubuntu]
+#               and /etc/hostapd/hostapd.conf
+#               and /etc/network/interfaces
+#               first)
 #
 # cd /usr/bin
 # (sudo) ln -s {target:vwifi file} {linkname:vwifi}
 #
-# origin: by frank<xuzhen165@gmail.com>
-# developer: niasw<sun.niasw@gmail.com>
 
 function usage
 {
@@ -21,67 +24,95 @@ function usage
     echo -e "\t -h\thelp, print this message then exit"
 }
 
-function start
-{
-    local RTGW=$1
-
-  # initial wifi interface
-    ifconfig wlan0 $rtgw netmask $nmsk
-
-  # start dhcpd
-    #killall dhcpd
-    touch /var/run/dhcpd.pid
-    chown dhcpd /var/run/dhcpd.pid
-    dhcpd wlan0
-
-  # enable NAT
-    iptables --flush
-    iptables --table nat --flush
-    iptables --delete-chain
-    iptables --table nat --delete-chain
-    iptables --table nat --append POSTROUTING --out-interface eth0 -j MASQUERADE
-    iptables --append FORWARD --in-interface wlan0 -j ACCEPT
-    sysctl -w net.ipv4.ip_forward=1
-
-  # start hostapd
-    #killall hostapd
-    hostapd /etc/hostapd/hostapd.conf >/dev/null 2>&1& #if you want to ignore output
-    #hostapd /etc/hostapd/hostapd.conf #if you want to see output
-}
-
-function stop
-{
-    killall hostapd dhcpd
-}
-
 rtgw=192.168.32.1
 nmsk=255.255.255.0
 op=
 
+function start
+{
+# note: if all configures have been set properly, dhcpd & interface & hostapd should have been started along with ubuntu.
+
+# initial wifi interface
+#    ifconfig $1 up $rtgw netmask $nmsk
+
+# start dhcpd
+#    if [ "$(ps -e | grep dhcpd)" == "" ]; then
+#      touch /var/run/dhcpd.pid
+#      chown dhcpd /var/run/dhcpd.pid
+#      chgrp dhcpd /var/run/dhcpd.pid
+#      echo "dhcpd $1 starting..."
+#      dhcpd $1 &
+#      echo "dhcpd $1 started."
+#    fi
+
+# enable NAT
+    echo "IP table list before operation:"
+    iptables --list # checking current state
+
+#    iptables --flush
+#    iptables --table nat --flush
+#    iptables --delete-chain
+#    iptables --table nat --delete-chain
+
+    iptables --table nat --append POSTROUTING --out-interface $2 -j MASQUERADE
+    iptables --append FORWARD --in-interface $1 -j ACCEPT
+    sysctl -w net.ipv4.ip_forward=1
+
+    echo "IP table list after operation:"
+    iptables --list # checking current state
+
+# start hostapd
+#    echo "hostapd starting..."
+#    hostapd -B /etc/hostapd/hostapd.conf
+#    echo "hostapd started."
+
+}
+
+function stop
+{
+#    killall hostapd dhcpd
+#    rm /var/run/dhcpd.pid
+    echo "IP table list before operation:"
+    iptables --list # checking current state
+
+    iptables --table nat --delete POSTROUTING --out-interface $2 -j MASQUERADE
+    iptables --delete FORWARD --in-interface $1 -j ACCEPT
+    sysctl -w net.ipv4.ip_forward=0
+
+#    iptables --flush
+#    iptables --table nat --flush
+#    iptables --delete-chain
+#    iptables --table nat --delete-chain
+
+    echo "IP table list after operation:"
+    iptables --list # checking current state
+}
+
 while getopts "a:nfrh" option
 do
     case $option in
-        a   )   rtgw=$OPTARG;;
-        n   )   op="on";;
-        f   )   op="off";;
-        r   )   op="refresh";;
-        *   )   usage
-                exit 1;;
+    a   )   rtgw=$OPTARG;;
+    n   )   op="on";;
+    f   )   op="off";;
+    r   )   op="refresh";;
+    *   )   usage
+            exit 1;;
     esac
 done
 
 if [[ -n $op && -n $rtgw ]]; then
-    if [[ $op == on ]]; then
-        start;
-    elif [[ $op == off ]]; then
-        stop;
-    elif [[ $op == refresh ]]; then
-        stop;start;
-    else
-        echo "Sorry, invalid option."
-        usage;
-    fi
+  if [[ $op == on ]]; then
+    start wlan0 eth0;
+  elif [[ $op == off ]]; then
+    stop wlan0 eth0;
+  elif [[ $op == refresh ]]; then
+    stop wlan0 eth0;
+    start wlan0 eth0;
+  else
+    echo "Sorry, invalid option."
+    usage;
+  fi
 else
-    echo "Sorry, I didn't get enough information."
-    usage
+  echo "Sorry, I didn't get enough information."
+  usage
 fi
