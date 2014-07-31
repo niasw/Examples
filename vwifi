@@ -1,6 +1,4 @@
 #!/bin/bash
-# origin: by frank<xuzhen165@gmail.com>
-# developer: niasw<sun.niasw@gmail.com>
 #
 # virtual wifi
 # please add link to binary directory
@@ -46,8 +44,8 @@ function start
 #    fi
 
 # enable NAT
-    echo "IP table list before operation:"
-    iptables --list # checking current state
+#    echo "IP table list before operation:"
+#    iptables --list # checking current state
 
 #    iptables --flush
 #    iptables --table nat --flush
@@ -58,7 +56,7 @@ function start
     iptables --append FORWARD --in-interface $1 -j ACCEPT
     sysctl -w net.ipv4.ip_forward=1
 
-    echo "IP table list after operation:"
+    echo "IP table list now:"
     iptables --list # checking current state
 
 # start hostapd
@@ -72,8 +70,8 @@ function stop
 {
 #    killall hostapd dhcpd
 #    rm /var/run/dhcpd.pid
-    echo "IP table list before operation:"
-    iptables --list # checking current state
+#    echo "IP table list before operation:"
+#    iptables --list # checking current state
 
     iptables --table nat --delete POSTROUTING --out-interface $2 -j MASQUERADE
     iptables --delete FORWARD --in-interface $1 -j ACCEPT
@@ -84,7 +82,7 @@ function stop
 #    iptables --delete-chain
 #    iptables --table nat --delete-chain
 
-    echo "IP table list after operation:"
+    echo "IP table list now:"
     iptables --list # checking current state
 }
 
@@ -116,3 +114,4 @@ else
   echo "Sorry, I didn't get enough information."
   usage
 fi
+

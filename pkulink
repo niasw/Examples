@@ -1,0 +1,73 @@
+#!/bin/bash
+#
+# shell client of ipgw
+# please add link to binary directory
+#
+# cd /usr/bin
+# (sudo) ln -s {target:pkulink file} {linkname:pkulink}
+#
+# origin:by jiangzuoyan@gmail.com
+# developer: sun.niasw@gmail.com
+
+function usage
+{
+    echo -e "Usage:\n\t$0\t[-u uid] [-c] [-a] [-d] [-f] [-h]"
+    echo -e "\t -c\tconnect to ipgw"
+    echo -e "\t -d\tdisconnect from ipgw"
+    echo -e "\t -a\tdisconnectall from ipgw"
+    echo -e "\t -f\tforce to connect"
+    echo -e "\t -h\thelp, print this message then exit"
+}
+
+function dolink
+{
+    local U=$1
+    local OP=$2
+    if [[ -z $P ]]; then
+        echo -n "[pkulink] password for ipgw:"
+        read -s P
+    fi
+    wget -q --no-check-certificate 'https://162.105.67.5/ipgw/ipgw.ipgw' \
+         --post-data "uid=$U&password=$P&range=2&timeout=1&operation=$OP" \
+         -Y off -T 10 -t 3 -O - | \
+    sed -n -e '/<table/,/<\/table>/{s/&nbsp;/ /g;s/<[^>]*>//g;p;}' \
+    > '/tmp/ipgw.tmp'
+#-q : quiet mode while downloading the linking reply -- ipgw.ipgw
+#--post-data: send your userID, the password and your option request
+#-Y off :
+#-T 10  : timeout if have been waiting for 10 seconds
+#-t 3   : retry 3 times if failed
+#-O -   : output the downloaded file to the terminal instead of to a file
+#sed: filter the stream of ipgw.ipgw (as a html which has a lot of junk script.)
+    iconv -f GB2312 -t UTF-8 '/tmp/ipgw.tmp'
+}
+
+u=1000010384
+op=''
+op1=''
+op2=''
+P=''
+
+while getopts "u:cadfh" option
+do
+    case $option in
+        u   )   u=$OPTARG;;
+        c   )   op=connect;;
+        d   )   op=disconnect;;
+        a   )   op=disconnectall;;
+        f   )   op1=disconnectall
+                op2=connect;;
+        *   )   usage
+                exit 1;;
+    esac
+done
+
+if [[ -n $op && -n $u ]]; then
+    dolink $u $op;
+elif [[ -n $op1 && -n $op2 && -n $u ]]; then
+    dolink $u $op1
+    dolink $u $op2;
+else
+    echo "Sorry, I didn't get enough information."
+    usage
+fi
