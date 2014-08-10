@@ -148,6 +148,6 @@ CLASSPATH="/usr/local/java/jogamp/jar/gluegen-rt.jar:$CLASSPATH";
 export CLASSPATH;
 if [ -d '/media/c0307d83-cbe2-433a-a5fd-cf4f04546e3c' ]; then
   export ANDROID_HOME="/media/c0307d83-cbe2-433a-a5fd-cf4f04546e3c/android-sdk-linux";
-  export PATH="$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$PATH";
+  export PATH="$ANDROID_HOME/tools:$ANDROID_HOME/build-tools:$ANDROID_HOME/platform-tools:$PATH";
 fi
 
