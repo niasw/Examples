@@ -107,12 +107,13 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
 fi
 
 # add external programs
+export JAVA_HOME="/usr/local/java";
 PATH="/usr/local/texlive/2012/bin/i386-linux:$PATH";
 PATH="/usr/local/MATLAB/R2012a/bin:$PATH";
 PATH="/usr/local/comsol43/bin:$PATH";
 PATH="/usr/local/physim/bin:$PATH";
-PATH="/usr/local/java/jdk/bin:$PATH";
-PATH="/usr/local/java/jdk/jre/bin:$PATH";
+PATH="$JAVA_HOME/jdk/bin:$PATH";
+PATH="$JAVA_HOME/jdk/jre/bin:$PATH";
 PATH="/usr/local/cuda/bin:$PATH";
 PATH="/usr/lib/nvidia-current/bin:$PATH";
 export PATH;
@@ -123,11 +124,11 @@ export PKG_CONFIG_PATH;
 LDFLAGS="-L/usr/local/physim/lib $LDFLAGS";
 LDFLAGS="-L/usr/local/cuda/lib $LDFLAGS";
 LDFLAGS="-L/usr/local/cuda/extras/CUPTI/lib $LDFLAGS";
-LDFLAGS="-L/usr/local/java/jogamp/jar/lib $LDFLAGS";
+LDFLAGS="-L$JAVA_HOME/jogamp/jar/lib $LDFLAGS";
 LDFLAGS="-L/usr/lib/nvidia-current $LDFLAGS";
 CPPFLAGS="-I/usr/local/physim/include $CPPFLAGS";
-CPPFLAGS="-I/usr/local/java/jdk/include $CPPFLAGS"
-CPPFLAGS="-I/usr/local/java/jdk/include/linux $CPPFLAGS"
+CPPFLAGS="-I$JAVA_HOME/jdk/include $CPPFLAGS"
+CPPFLAGS="-I$JAVA_HOME/jdk/include/linux $CPPFLAGS"
 CPPFLAGS="-I/usr/local/cuda/include $CPPFLAGS"
 CPPFLAGS="-I/usr/local/cuda/extras/CUPTI/include $CPPFLAGS"
 CPPFLAGS="-I/usr/local/cuda/extras/Debugger/include $CPPFLAGS"
@@ -136,18 +137,17 @@ export CPPFLAGS;
 LD_LIBRARY_PATH="/usr/local/physim/lib:$LD_LIBRARY_PATH";
 LD_LIBRARY_PATH="/usr/local/cuda/lib:$LD_LIBRARY_PATH";
 LD_LIBRARY_PATH="/usr/local/cuda/extras/CUPTI/lib:$LD_LIBRARY_PATH";
-LD_LIBRARY_PATH="/usr/local/java/jogamp/jar/lib:$LD_LIBRARY_PATH";
+LD_LIBRARY_PATH="$JAVA_HOME/jogamp/jar/lib:$LD_LIBRARY_PATH";
 LD_LIBRARY_PATH="/usr/lib/nvidia-current:$LD_LIBRARY_PATH";
 export LD_LIBRARY_PATH;
-CLASSPATH="/usr/local/java/jdk/lib:/usr/local/java/jdk/jre/lib:$CLASSPATH";
-CLASSPATH="/usr/local/java/jogamp/jar/jogl-all.jar:$CLASSPATH";
-CLASSPATH="/usr/local/java/jogamp/jar/joal.jar:$CLASSPATH";
-CLASSPATH="/usr/local/java/jogamp/jar/jocl.jar:$CLASSPATH";
-CLASSPATH="/usr/local/java/jogamp/jar/gluegen.jar:$CLASSPATH";
-CLASSPATH="/usr/local/java/jogamp/jar/gluegen-rt.jar:$CLASSPATH";
+CLASSPATH="$JAVA_HOME/jdk/lib:/usr/local/java/jdk/jre/lib:$CLASSPATH";
+CLASSPATH="$JAVA_HOME/jogamp/jar/jogl-all.jar:$CLASSPATH";
+CLASSPATH="$JAVA_HOME/jogamp/jar/joal.jar:$CLASSPATH";
+CLASSPATH="$JAVA_HOME/jogamp/jar/jocl.jar:$CLASSPATH";
+CLASSPATH="$JAVA_HOME/jogamp/jar/gluegen.jar:$CLASSPATH";
+CLASSPATH="$JAVA_HOME/jogamp/jar/gluegen-rt.jar:$CLASSPATH";
 export CLASSPATH;
 if [ -d '/media/c0307d83-cbe2-433a-a5fd-cf4f04546e3c' ]; then
   export ANDROID_HOME="/media/c0307d83-cbe2-433a-a5fd-cf4f04546e3c/android-sdk-linux";
   export PATH="$ANDROID_HOME/tools:$ANDROID_HOME/build-tools:$ANDROID_HOME/platform-tools:$PATH";
 fi
-
