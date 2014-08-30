@@ -14,11 +14,12 @@
 
 function usage
 {
-    echo -e "Usage:\n\t(sudo) $0\t[-a rtgw] [-n] [-f] [-r] [-h]"
+    echo -e "Usage:\n\t(sudo) $0\t[-a rtgw] [-n] [-f] [-r] [-s] [-h]"
     echo -e "\t -a\tspecify route gateway"
-    echo -e "\t -n\tturn on  Virtual WiFi"
-    echo -e "\t -f\tturn off Virtual WiFi"
-    echo -e "\t -r\trefresh  Virtual WiFi"
+    echo -e "\t -n\tturn on  ipv4 Virtual WiFi share" # add 1 share rule
+    echo -e "\t -f\tturn off ipv4 Virtual WiFi share" # del 1 share rule
+    echo -e "\t -s\tswitch to Virtual WiFi sender mode (init mode)" # enable /etc/network/interfaces, disable network-manager settings
+    echo -e "\t -r\tswitch to WiFi receiver mode" # disable /etc/network/interfaces, enable network-manager settings
     echo -e "\t -h\thelp, print this message then exit"
 }
 
@@ -30,28 +31,6 @@ function start
 {
 # note: if all configures have been set properly, dhcpd & interface & hostapd should have been started along with ubuntu.
 
-# initial wifi interface
-#    ifconfig $1 up $rtgw netmask $nmsk
-
-# start dhcpd
-#    if [ "$(ps -e | grep dhcpd)" == "" ]; then
-#      touch /var/run/dhcpd.pid
-#      chown dhcpd /var/run/dhcpd.pid
-#      chgrp dhcpd /var/run/dhcpd.pid
-#      echo "dhcpd $1 starting..."
-#      dhcpd $1 &
-#      echo "dhcpd $1 started."
-#    fi
-
-# enable NAT
-#    echo "IP table list before operation:"
-#    iptables --list # checking current state
-
-#    iptables --flush
-#    iptables --table nat --flush
-#    iptables --delete-chain
-#    iptables --table nat --delete-chain
-
     iptables --table nat --append POSTROUTING --out-interface $2 -j MASQUERADE
     iptables --append FORWARD --in-interface $1 -j ACCEPT
     sysctl -w net.ipv4.ip_forward=1
@@ -59,40 +38,90 @@ function start
     echo "IP table list now:"
     iptables --list # checking current state
 
-# start hostapd
-#    echo "hostapd starting..."
-#    hostapd -B /etc/hostapd/hostapd.conf
-#    echo "hostapd started."
 
 }
 
 function stop
 {
-#    killall hostapd dhcpd
-#    rm /var/run/dhcpd.pid
-#    echo "IP table list before operation:"
-#    iptables --list # checking current state
-
     iptables --table nat --delete POSTROUTING --out-interface $2 -j MASQUERADE
     iptables --delete FORWARD --in-interface $1 -j ACCEPT
     sysctl -w net.ipv4.ip_forward=0
-
-#    iptables --flush
-#    iptables --table nat --flush
-#    iptables --delete-chain
-#    iptables --table nat --delete-chain
 
     echo "IP table list now:"
     iptables --list # checking current state
 }
 
-while getopts "a:nfrh" option
+function netmanon
+{
+    cat /etc/NetworkManager/NetworkManager.conf | sed -e "s/^managed=false$/managed=true/;" > /tmp/netman.txt;
+    mv /tmp/netman.txt /etc/NetworkManager/NetworkManager.conf;
+    chmod 644 /etc/NetworkManager/NetworkManager.conf;
+    restart network-manager;
+}
+
+function netmanoff
+{
+    cat /etc/NetworkManager/NetworkManager.conf | sed -e "s/^managed=true$/managed=false/;" > /tmp/netman.txt;
+    mv /tmp/netman.txt /etc/NetworkManager/NetworkManager.conf;
+    chmod 644 /etc/NetworkManager/NetworkManager.conf;
+    restart network-manager;
+}
+
+function setup1
+{
+# initial wifi interface
+    ifconfig $1 up $rtgw netmask $nmsk
+
+# start dhcpd
+    if [ "$(ps -e | grep dhcpd)" == "" ]; then
+      touch /var/run/dhcpd.pid
+      chown dhcpd /var/run/dhcpd.pid
+      chgrp dhcpd /var/run/dhcpd.pid
+      echo "dhcpd $1 starting..."
+      dhcpd $1 &
+      echo "dhcpd $1 started."
+    fi
+
+# enable NAT
+    echo "IP table list before operation:"
+    iptables --list # checking current state
+
+    iptables --flush
+    iptables --table nat --flush
+    iptables --delete-chain
+    iptables --table nat --delete-chain
+}
+
+function setup2
+{
+# start hostapd
+    if [ "$(ps -e | grep hostapd)" == "" ]; then
+      echo "hostapd starting..."
+      hostapd -B /etc/hostapd/hostapd.conf
+      echo "hostapd started."
+    fi
+}
+
+function setdown
+{
+    killall hostapd dhcpd
+    rm /var/run/dhcpd.pid
+
+# clear iptables
+    iptables --flush
+    iptables --table nat --flush
+    iptables --delete-chain
+    iptables --table nat --delete-chain
+}
+
+while getopts "a:nfrsh" option
 do
     case $option in
     a   )   rtgw=$OPTARG;;
     n   )   op="on";;
     f   )   op="off";;
-    r   )   op="refresh";;
+    r   )   op="receiver";;
+    s   )   op="sender";;
     *   )   usage
             exit 1;;
     esac
@@ -103,9 +132,15 @@ if [[ -n $op && -n $rtgw ]]; then
     start wlan0 eth0;
   elif [[ $op == off ]]; then
     stop wlan0 eth0;
-  elif [[ $op == refresh ]]; then
+  elif [[ $op == receiver ]]; then
+    netmanon;
     stop wlan0 eth0;
+    setdown;
+  elif [[ $op == sender ]]; then
+    netmanoff;
+    setup1 wlan0;
     start wlan0 eth0;
+    setup2;
   else
     echo "Sorry, invalid option."
     usage;
@@ -114,4 +149,3 @@ else
   echo "Sorry, I didn't get enough information."
   usage
 fi
-
